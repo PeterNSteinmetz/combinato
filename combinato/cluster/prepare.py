@@ -36,6 +36,8 @@ def make_arguments(filename, sign, mode, start=0,
         start_idx = np.searchsorted(times, start)
         stop_idx = np.searchsorted(times, stop)
 
+        #if start_idx > 0:
+        #    start_idx += 1
         # this is useful for later concatenation
         if add_one:
             start_idx += 1
@@ -161,6 +163,7 @@ def parse_arguments():
             fpt.close()
             # convert from microseconds at this stage
             start_stop.append((times[0]/1000, times[1]/1000))
+            #add_one=True
 
         if args.between:
             # 2nd timestamp of 1st file to 1st timestamp of 2nd file

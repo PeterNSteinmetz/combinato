@@ -146,14 +146,23 @@ class GroupOverviewFigure(MplCanvas):
 
         # set the default limits
 
-        # use threshold times if wanted
-        if (thresholds is not None) and options['GuiUseThresholdTimeAxis']:
-            self.startTime = thresholds[0, 0]
-            self.stopTime = thresholds[-1, 0]
-            print('Using times from thresholds')
-        else:
-            self.startTime = times[0]
-            self.stopTime = times[1]
+        # use thresh ld times if wanme_time in args.times:
+        if options['UseTimeFileTimeAxis']:
+            with open('ts_TimeAxis', 'r') as fpt:
+                times = [float(field) for field in fpt.readline().split()]
+                fpt.close()
+        # convert from microseconds at this stage
+            self.startTime = times[0]/1000
+            self.stopTime = times[1]/1000
+            print('Using times from time_file')
+        else: 
+            if (thresholds is not None) and options['GuiUseThresholdTimeAxis']:
+                self.startTime = thresholds[0, 0]
+                self.stopTime = thresholds[-1, 0]
+                print('Using times from thresholds')
+            else:
+                self.startTime = times[0]
+                self.stopTime = times[1]
 
         self.meanAx.set_xlim(xax)
         self.meanAx.set_ylim(options['overview_ax_ylim'])
@@ -261,7 +270,7 @@ class GroupOverviewFigure(MplCanvas):
         self.cumSpikeAx.set_title(tstr)
 
         # thresholds
-        # print((self.thresholds[-1, 1] - self.thresholds[0, 0])/6e4)
+        #print((self.thresholds[-1, 1] - self.thresholds[0, 0])/6e4)
         if self.thresholds is not None:
             thr_times = self.thresholds[:, :2].ravel() - self.startTime
             thr_times /= 6e4  # now in minutes
@@ -270,7 +279,7 @@ class GroupOverviewFigure(MplCanvas):
             if self.sign == 'neg':
                 thrs *= -1
             self.overTimeAx.plot(thr_times, thrs, 'm', lw=2)
-            # print(thr_times)
+            print(thr_times)
 
             if len(thrs) > 1:
                 self.maxDistrAx.axvline(np.median(thrs), color='m', lw=2)
