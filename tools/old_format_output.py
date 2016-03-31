@@ -17,7 +17,7 @@ from scipy.io import savemat
 from combinato import Combinato, h5files, TYPE_ART, TYPE_NO, GROUP_ART, GROUP_NOCLASS 
 
 
-def convert_to_mat(groups, outfname, label, drop_artifacts=False):
+def convert_to_mat(groups, outfname, drop_artifacts=False):
     """
     convert groups to mat files
     """
@@ -75,20 +75,20 @@ def convert_to_mat(groups, outfname, label, drop_artifacts=False):
     spikesdict = {'spikes': all_spikes,
                   'index_ts': all_times}
 
-    spikes_fname = outfname + '_spikes' +'_'+ label + '.mat'
+    spikes_fname = outfname + '_spikes.mat'
 
     savemat(spikes_fname, spikesdict)
 
     timesdict = {'spikes': all_spikes,
                  'cluster_class': cluster_class}
 
-    times_fname = 'times_' + outfname +'_'+ label + '.mat'
+    times_fname = 'times_' + outfname + '.mat'
     savemat(times_fname, timesdict)
 
     return info
 
 
-def main(fname_data, fname_sorting, sign, outfname, label, drop_artifacts=False):
+def main(fname_data, fname_sorting, sign, outfname, drop_artifacts=False):
     """
     read groups from sorting for conversion
     """
@@ -112,7 +112,7 @@ def main(fname_data, fname_sorting, sign, outfname, label, drop_artifacts=False)
         info_row = None
     if go_on:
         info_row = [ch_num, ch_name]
-        info_dict = convert_to_mat(joined, outfname, label, drop_artifacts)
+        info_dict = convert_to_mat(joined, outfname, drop_artifacts)
         info_row += [info_dict[GROUP_ART], info_dict[GROUP_NOCLASS]]
         del info_dict[GROUP_ART]
         del info_dict[GROUP_NOCLASS]
@@ -153,8 +153,7 @@ def parse_args():
     if do_info:
         session_name = os.path.dirname(rel_h5files[0])
         date = time.strftime('%Y-%m-%d_%H:%M:%S')
-        csvfile = open('cluster_info_%s.csv'% (label), 'w') 
-
+        csvfile = open('cluster_info.csv', 'w')
         writer = csv.writer(csvfile)
         writer.writerow(['# Session:  {}, Converted: {}'.
             format(session_name, date)])
@@ -173,7 +172,7 @@ def parse_args():
         basename = os.path.basename(dfile)
         sorting_path = os.path.join(basedir, label)
         outfname = basename[5:-3]
-        info = main(dfile, sorting_path, sign, outfname, label, drop_artifacts)
+        info = main(dfile, sorting_path, sign, outfname, drop_artifacts)
         if do_info and (info is not None):
             writer.writerow(info)
             all_info[0][rel_h5files.index(dfile)] = info[4:]
@@ -185,7 +184,7 @@ def parse_args():
                      '"cluster_class"-values 1 and up.\nIgnores Unassigned '
                      '(value 0)'}
         info_fname = "cluster_info"
-        savemat(info_fname+'_'+label, info_dict)
+        savemat(info_fname, info_dict)
 
 if __name__ == "__main__":
     parse_args()
