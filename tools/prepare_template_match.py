@@ -11,9 +11,15 @@ import numpy as np
 import tables
 #from combinato import SortingManager
 import glob
-from combinato import NcsFile
 import shutil
 
+def write_joblist(new_joblist):
+    outfname = "joblist_transfer.txt"
+    
+    with open(outfname, 'a') as outf:
+         for job in new_joblist:
+             outf.write("{}\n".format(job))
+    outf.close()    
     
 def main(preIctal_session, total_session, preIctal_label, joblist):#, channels):
     #print(preIctal_label)
@@ -22,6 +28,7 @@ def main(preIctal_session, total_session, preIctal_label, joblist):#, channels):
     #ncsfiles=glob.glob(total_session+'CSC*.ncs')
     #ncsfiles=np.unique(ncsfiles)
     #for ncsfile in ncsfiles:
+    new_joblist=[]
     for job in joblist:
         channel=job[0][:job[0].rfind('/')]
         #channel=ncsfile[ncsfile.rfind('/')+1:ncsfile.rfind('.')]
@@ -33,7 +40,7 @@ def main(preIctal_session, total_session, preIctal_label, joblist):#, channels):
         if not sorting_PreIctal_file:
             print(channel+' has no PreIctal clustered spikes')
             continue
-            
+        new_joblist.append(channel)    
         sorting_TemplateTimes_file=glob.glob(os.path.join(total_session, job[2],'sorting.h5'))
         #sorting_TemplateTimes_file=glob.glob(os.path.join(total_session, channel,templateTimes_label+'_*','sorting.h5'))
         preIctal_file=os.path.join(preIctal_session, channel,'data_' + channel + '.h5')
@@ -41,7 +48,9 @@ def main(preIctal_session, total_session, preIctal_label, joblist):#, channels):
         #totalSession_file=os.path.join(total_session, channel,'data_' + channel + '.h5')
 
         transform_sorting(sorting_PreIctal_file[0], sorting_TemplateTimes_file[0], preIctal_file, totalSession_file)
-       
+    
+    # write new joblist for template matching    
+    write_joblist(new_joblist)   
      
     
     
@@ -100,8 +109,6 @@ def parse_args():
     parser.add_argument('--jobs', type=FileType('r'))
     parser.add_argument('--total_session', nargs=1, required=True)
     parser.add_argument('--preIctal_label', nargs=1, required=True)
-    #parser.add_argument('--channels', nargs='+', required=True)
-    parser.add_argument('--templateTimes_label', nargs=1)
     
     
 
@@ -110,13 +117,6 @@ def parse_args():
     preIctal_session=args.preIctal_session
     total_session=args.total_session
     preIctal_label=args.preIctal_label
-    #channels=args.channels
-    
-    #if args.templateTimes_label:
-    #    templateTimes_label=args.templateTimes_label
-    #else:
-    #    templateTimes_label='sort_pos_TemplateTimes'
-    
     jobdata = args.jobs.read().splitlines()
     joblist = tuple((tuple(line.split()) for line in jobdata))
     #print(joblist)
