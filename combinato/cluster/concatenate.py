@@ -294,7 +294,7 @@ def main(fname, sessions, label, do_plot=True):
 
         for aid in art_ids:
             artifacts[artifacts[:, 0] == aid, 1] = 1
-
+        
         fid.root.artifacts[:] = artifacts
         fid.flush()
 
